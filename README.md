@@ -13,6 +13,24 @@ bun run dev
 
 `bun run build` creates the production site in `dist/`. Node 18+ with npm is also supported.
 
+## Deploy with Docker
+
+On a server with Docker and the Compose plugin installed, clone this repository and run:
+
+```bash
+docker compose up -d --build
+```
+
+Open `http://SERVER_IP:8080`. Set `PORT` to use a different host port, for example:
+
+```bash
+PORT=3000 docker compose up -d --build
+```
+
+After pulling updates, run `docker compose up -d --build` again. View logs with `docker compose logs -f portfolio` and stop the site with `docker compose down`.
+
+For a public domain, point DNS at the server and put an HTTPS reverse proxy in front of port 8080. The container serves the built static site through Nginx; no runtime environment variables are required.
+
 ## Controls
 
 | Action | Desktop | Mobile |
