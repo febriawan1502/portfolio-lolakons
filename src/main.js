@@ -34,7 +34,7 @@ let playing = false;
 let repairing = false;
 let powerCount = 0;
 const poweredPlants = new Set();
-const houseTarget = { kind: 'house', id: 'house', title: 'House', x: 0, z: 0 };
+const houseTarget = { kind: 'house', id: 'house', title: 'House', x: 0, z: 0, poweredCount: 0 };
 let yaw = .55;
 let pitch = .56;
 let distance = window.innerWidth < 700 ? 15 : 18;
@@ -74,7 +74,7 @@ function nearestStation() {
 }
 
 function nearestTarget() {
-  if (powerCount === 4 && Math.hypot(character.root.position.x, character.root.position.z) <= 4.3) return houseTarget;
+  if (Math.hypot(character.root.position.x, character.root.position.z) <= 4.3) return houseTarget;
   return nearestStation();
 }
 
@@ -87,8 +87,11 @@ function openOverview() {
 function interact(station = nearestTarget()) {
   if (!playing || repairing || ui.isOpen()) return;
   if (station?.kind === 'house') {
-    if (powerCount !== 4) { ui.toast(`${4 - powerCount} power plants still need repair`); return; }
     if (Math.hypot(character.root.position.x, character.root.position.z) > 4.3) { ui.toast('Move closer to the house'); return; }
+    if (powerCount !== 4) {
+      ui.toast(`Repair all 4 power plants, then return here. ${powerCount}/4 online.`, 4500);
+      return;
+    }
     openOverview();
     return;
   }
@@ -106,6 +109,7 @@ function interact(station = nearestTarget()) {
     station.appliance = ['lamp', 'tv', 'laptop', 'fan'][powerCount];
     setStationPower(world, station, true);
     powerCount++;
+    houseTarget.poweredCount = powerCount;
     poweredPlants.add(station.id);
     effects.burst(station.group.position);
     sound(780);

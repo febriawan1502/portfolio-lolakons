@@ -12,7 +12,7 @@ function contentFor(id, headingId = 'panel-title') {
   if (id === 'about') return `<div class="panel-kicker">01 / ABOUT</div><h2 id="${headingId}">About <em>me.</em></h2><p class="panel-lead">${escape(portfolio.bio)}</p><div class="about-grid"><div><span class="field-label">NAME</span><strong>${escape(portfolio.name)}</strong></div><div><span class="field-label">CURRENT ROLE</span><strong>${escape(portfolio.role)}</strong></div><div><span class="field-label">ORGANIZATION</span><strong>${escape(portfolio.organization)}</strong></div></div>`;
   if (id === 'projects') return `<div class="panel-kicker">02 / PROJECTS</div><h2 id="${headingId}">Projects<span class="period">.</span></h2><div class="project-list">${portfolio.projects.map((p, i) => `<article class="project-row"><div class="project-number">0${i + 1}</div><div><small>${escape(p.type)}</small><h3>${escape(p.title)}</h3><p>${escape(p.description)}</p></div>${p.url ? `<div class="project-link">${link('VISIT SITE', p.url)}</div>` : ''}</article>`).join('')}</div>`;
   if (id === 'experience') return `<div class="panel-kicker">03 / EXPERIENCE</div><h2 id="${headingId}">Experience<span class="period">.</span></h2><div class="timeline">${portfolio.experience.map(item => `<div class="timeline-item"><span class="timeline-date">${escape(item.date)}</span><div><h3>${escape(item.role)}</h3><strong>${escape(item.place)}</strong><p>${escape(item.detail)}</p></div></div>`).join('')}</div>`;
-  return `<div class="panel-kicker">04 / CONTACT</div><h2 id="${headingId}">Contact <em>me.</em></h2><p class="panel-lead">For inquiries, email me at:</p><a class="email-link" href="mailto:${escape(portfolio.email)}">${escape(portfolio.email)} <span>↗</span></a>`;
+  return `<div class="panel-kicker">04 / CONTACT</div><h2 id="${headingId}">Contact <em>me.</em></h2><p class="panel-lead">Get in touch by email, or find my work on GitHub.</p>${[portfolio.email, portfolio.workEmail].map(email => `<a class="email-link" href="mailto:${escape(email)}"><span>${escape(email)}</span><span aria-hidden="true">↗</span></a>`).join('')}<a class="email-link" href="${escape(portfolio.github)}" target="_blank" rel="noopener noreferrer"><span>GitHub · febriawan1502</span><span aria-hidden="true">↗</span></a>`;
 }
 
 const overviewSections = [
@@ -81,15 +81,17 @@ export function createUI(onClose) {
     isOpen: () => !backdrop.hidden,
     close: closePanel,
     prompt(station) {
-      const key = station ? station.kind === 'house' ? 'house' : `${station.id}:${station.repaired}` : '';
+      const isHouse = station?.kind === 'house';
+      const houseReady = isHouse && station.poweredCount === 4;
+      const key = station ? isHouse ? `house:${station.poweredCount}` : `${station.id}:${station.repaired}` : '';
       if (key === lastPrompt) return;
       lastPrompt = key;
       prompt.hidden = !station;
-      $('#mobile-interact small').textContent = station?.kind === 'house' ? 'VIEW' : station?.repaired ? 'OPEN' : 'REPAIR';
-      $('#mobile-interact').setAttribute('aria-label', station?.kind === 'house' ? 'View house overview' : station?.repaired ? 'Inspect power plant' : 'Repair power plant');
+      $('#mobile-interact small').textContent = isHouse ? houseReady ? 'VIEW' : 'CHECK' : station?.repaired ? 'OPEN' : 'REPAIR';
+      $('#mobile-interact').setAttribute('aria-label', isHouse ? houseReady ? 'View house overview' : 'Check house power' : station?.repaired ? 'Inspect power plant' : 'Repair power plant');
       if (station) {
-        $('#prompt-action').textContent = station.kind === 'house' ? 'VIEW OVERVIEW' : station.repaired ? 'INSPECT PLANT' : 'REPAIR PLANT';
-        $('#prompt-name').textContent = station.kind === 'house' ? 'HOUSE · ALL SECTIONS' : station.title.toUpperCase();
+        $('#prompt-action').textContent = isHouse ? houseReady ? 'VIEW OVERVIEW' : 'CHECK HOUSE' : station.repaired ? 'INSPECT PLANT' : 'REPAIR PLANT';
+        $('#prompt-name').textContent = isHouse ? houseReady ? 'HOUSE · ALL SECTIONS' : `HOUSE · ${station.poweredCount}/4 ONLINE` : station.title.toUpperCase();
       }
     },
     progress(count, station) {
@@ -102,11 +104,11 @@ export function createUI(onClose) {
         $('.mission p').textContent = 'The house is fully powered. Return to it for the complete portfolio.';
       }
     },
-    toast(message) {
+    toast(message, duration = 2500) {
       toast.textContent = message;
       toast.classList.add('visible');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('visible'), 2500);
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), duration);
     }
   };
 }

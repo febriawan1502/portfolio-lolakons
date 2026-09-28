@@ -150,6 +150,67 @@ export function updatePlant(station, time, reducedMotion) {
   });
 }
 
+function createApplianceScreen(parent, kind, x, y, z, width, height) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = Math.round(256 * height / width);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
+  mesh.position.set(x, y, z);
+  mesh.visible = false;
+  parent.add(mesh);
+  return { kind, mesh, texture, context: canvas.getContext('2d'), frame: -1 };
+}
+
+function animateScreen(screen, time) {
+  const frame = Math.floor(time * 12);
+  if (screen.frame === frame) return;
+  screen.frame = frame;
+  const t = frame / 12;
+  const g = screen.context;
+  const { width: w, height: h } = g.canvas;
+  if (screen.kind === 'tv') {
+    g.fillStyle = '#40bade'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#ffe18a'; g.beginPath(); g.arc(195, 32, 18, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f1f1e5';
+    for (let i = 0; i < 3; i++) {
+      const x = ((i * 100 + t * 14) % 340) - 60;
+      g.fillRect(x, 23 + i * 9, 42, 9);
+      g.fillRect(x + 10, 16 + i * 9, 22, 7);
+    }
+    g.fillStyle = '#27816f';
+    g.beginPath(); g.moveTo(0, h * .7); g.lineTo(58, h * .36); g.lineTo(120, h * .75); g.lineTo(180, h * .48); g.lineTo(w, h * .76); g.lineTo(w, h); g.lineTo(0, h); g.fill();
+    g.fillStyle = '#176f9a'; g.fillRect(0, h * .78, w, h * .22);
+    g.strokeStyle = '#9fe9ed'; g.lineWidth = 3;
+    for (let row = 0; row < 3; row++) {
+      g.beginPath();
+      for (let x = 0; x <= w; x += 4) {
+        const y = h * .82 + row * 9 + Math.sin(x * .065 + t * 2 + row) * 2;
+        if (x === 0) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.stroke();
+    }
+  } else {
+    g.fillStyle = '#16384c'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#d9f4ef'; g.fillRect(0, 0, w, 17);
+    g.fillStyle = '#23aae1'; g.fillRect(8, 5, 9, 7);
+    g.fillStyle = '#426276'; g.fillRect(24, 6, 67, 5);
+    g.fillStyle = '#254d61'; g.fillRect(8, 27, 42, h - 37);
+    g.fillStyle = '#8debd3';
+    for (let i = 0; i < 4; i++) g.fillRect(16, 36 + i * 20, 26, 5);
+    g.fillStyle = '#234c60'; g.fillRect(60, 27, 186, h - 57);
+    for (let i = 0; i < 7; i++) {
+      const barHeight = (h - 75) * (.35 + .5 * (.5 + .5 * Math.sin(t * 1.8 + i * .7)));
+      g.fillStyle = i % 2 ? '#23aae1' : '#8debd3';
+      g.fillRect(70 + i * 24, h - 38 - barHeight, 15, barHeight);
+    }
+    g.fillStyle = '#426276'; g.fillRect(60, h - 20, 186, 6);
+    g.fillStyle = '#ffe18a'; g.fillRect(60 + (t * 30 % 150), h - 20, 36, 6);
+  }
+  screen.texture.needsUpdate = true;
+}
+
 export function createHouse(scene) {
   const house = new THREE.Group();
   scene.add(house);
@@ -168,16 +229,43 @@ export function createHouse(scene) {
   block(house, readyMat, 0, 2.94, 1.65, .55, .33, .28);
   const hitbox = block(house, new THREE.MeshBasicMaterial({ visible: false }), 0, 1.5, 0, 5.4, 3, 4.2);
   hitbox.userData.house = true;
-  const lampMat = material(0x77776b, { emissive: 0xffdf76, emissiveIntensity: 0 });
-  block(house, M.dark, -1.55, 2.14, .56, .07, .55, .07);
-  block(house, material(0xf2e3a6), -1.55, 1.83, .56, .64, .2, .64);
-  block(house, lampMat, -1.55, 1.66, .56, .38, .17, .38);
-  const lampLight = new THREE.PointLight(0xffd97a, 0, 6);
-  lampLight.position.set(-1.55, 1.6, .56); house.add(lampLight);
+  const lampX = -1.25;
+  const lampZ = .85;
+  block(house, M.dark, lampX, 2.61, -.08, .12, .1, 3.5);
+  block(house, M.dark, lampX, 2.34, lampZ, .07, .48, .07);
+  cylinder(house, M.dark, lampX, 2.05, lampZ, .18, .46, .26);
+  const lampMat = material(0x46545a, { emissive: 0xffdc8a, emissiveIntensity: 0, toneMapped: false });
+  block(house, lampMat, lampX, 1.77, lampZ, .46, .38, .46);
+  block(house, M.dark, lampX, 1.55, lampZ, .53, .08, .53);
+  const lampLight = new THREE.PointLight(0xffd183, 0, 5.5);
+  lampLight.position.set(lampX, 1.72, lampZ); house.add(lampLight);
+
+  const glowCanvas = document.createElement('canvas');
+  glowCanvas.width = glowCanvas.height = 128;
+  const glowContext = glowCanvas.getContext('2d');
+  const glowGradient = glowContext.createRadialGradient(64, 64, 0, 64, 64, 64);
+  glowGradient.addColorStop(0, 'rgba(255, 224, 153, 1)');
+  glowGradient.addColorStop(.35, 'rgba(255, 204, 102, .55)');
+  glowGradient.addColorStop(1, 'rgba(255, 204, 102, 0)');
+  glowContext.fillStyle = glowGradient;
+  glowContext.fillRect(0, 0, 128, 128);
+  const glowTexture = new THREE.CanvasTexture(glowCanvas);
+  glowTexture.colorSpace = THREE.SRGBColorSpace;
+  const lampGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture, transparent: true, opacity: .45, depthWrite: false, toneMapped: false }));
+  lampGlow.position.set(lampX, 1.77, lampZ);
+  lampGlow.scale.set(1.1, 1.1, 1);
+  lampGlow.visible = false;
+  house.add(lampGlow);
+  const lampPool = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), new THREE.MeshBasicMaterial({ map: glowTexture, transparent: true, opacity: .7, depthWrite: false, toneMapped: false }));
+  lampPool.rotation.x = -Math.PI / 2;
+  lampPool.position.set(lampX, .401, lampZ);
+  lampPool.visible = false;
+  house.add(lampPool);
 
   block(house, M.dark, -.45, 1.5, -1.62, 1.65, 1.05, .13);
   const tvMat = material(0x182b31, { emissive: 0x58c9e0, emissiveIntensity: 0 });
   block(house, tvMat, -.45, 1.5, -1.53, 1.43, .83, .025);
+  const tvScreen = createApplianceScreen(house, 'tv', -.45, 1.5, -1.513, 1.43, .83);
   block(house, M.wood, -.45, .63, -1.37, 1.9, .75, .6);
 
   block(house, M.wood, .92, .84, .63, 1.65, .15, .8);
@@ -185,6 +273,7 @@ export function createHouse(scene) {
   block(house, M.dark, .86, 1.14, .29, .78, .57, .08);
   const laptopMat = material(0x1d343d, { emissive: 0x8debd3, emissiveIntensity: 0 });
   block(house, laptopMat, .86, 1.14, .34, .67, .46, .02);
+  const laptopScreen = createApplianceScreen(house, 'laptop', .86, 1.14, .354, .67, .46);
   block(house, M.steel, .86, .95, .69, .87, .06, .5);
 
   block(house, M.steel, 1.8, .72, 1.2, .09, .83, .09);
@@ -200,14 +289,25 @@ export function createHouse(scene) {
   cylinder(fanRotor, M.steel, 0, 0, .08, .14, .14, .16).rotation.x = Math.PI / 2;
   const fanMat = material(0x354552, { emissive: 0x6edacb, emissiveIntensity: 0 });
   block(house, fanMat, 1.8, 1.24, 1.31, .25, .25, .04);
-  return { hitbox, readyMat, lampMat, lampLight, tvMat, laptopMat, fanMat, fanRotor, powered: { lamp: false, tv: false, laptop: false, fan: false } };
+  return { hitbox, readyMat, lampMat, lampLight, lampGlow, lampPool, tvMat, laptopMat, tvScreen, laptopScreen, fanMat, fanRotor, powered: { lamp: false, tv: false, laptop: false, fan: false } };
 }
 
 export function powerAppliance(house, appliance) {
   house.powered[appliance] = true;
-  if (appliance === 'lamp') { house.lampMat.color.setHex(0xffe48d); house.lampMat.emissiveIntensity = 1.8; house.lampLight.intensity = 2.5; }
+  if (appliance === 'lamp') {
+    house.lampMat.color.setHex(0xfff2c5);
+    house.lampMat.emissiveIntensity = 1.4;
+    house.lampLight.intensity = 7;
+    house.lampGlow.visible = true;
+    house.lampPool.visible = true;
+  }
   if (appliance === 'tv') { house.tvMat.color.setHex(0x6cd6e8); house.tvMat.emissiveIntensity = 1.1; }
   if (appliance === 'laptop') { house.laptopMat.color.setHex(0x8debd3); house.laptopMat.emissiveIntensity = 1.2; }
+  if (appliance === 'tv' || appliance === 'laptop') {
+    const screen = appliance === 'tv' ? house.tvScreen : house.laptopScreen;
+    screen.mesh.visible = true;
+    animateScreen(screen, 0);
+  }
   if (appliance === 'fan') { house.fanMat.color.setHex(0x70ddce); house.fanMat.emissiveIntensity = .9; }
   if (Object.values(house.powered).every(Boolean)) {
     house.readyMat.color.setHex(0xffd500);
@@ -215,6 +315,18 @@ export function powerAppliance(house, appliance) {
   }
 }
 
-export function updateHouse(house, reducedMotion) {
+export function updateHouse(house, time, reducedMotion) {
+  const animationTime = reducedMotion ? 0 : time;
+  if (house.powered.lamp) {
+    const pulse = reducedMotion ? 0 : Math.sin(time * 2);
+    house.lampLight.intensity = 7 + pulse * 1.1;
+    house.lampMat.emissiveIntensity = 1.4 + pulse * .15;
+    house.lampGlow.material.opacity = .45 + pulse * .1;
+    const glowSize = 1.1 + pulse * .09;
+    house.lampGlow.scale.set(glowSize, glowSize, 1);
+    house.lampPool.material.opacity = .7 + pulse * .08;
+  }
+  if (house.powered.tv) animateScreen(house.tvScreen, animationTime);
+  if (house.powered.laptop) animateScreen(house.laptopScreen, animationTime);
   if (house.powered.fan && !reducedMotion) house.fanRotor.rotation.z -= .09;
 }

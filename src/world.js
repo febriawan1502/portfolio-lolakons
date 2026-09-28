@@ -151,5 +151,5 @@ export function updateWorld(world, time) {
     }
     updatePlant(station, time, reducedMotion);
   }
-  updateHouse(world.house, reducedMotion);
+  updateHouse(world.house, time, reducedMotion);
 }

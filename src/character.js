@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import plnLogoUrl from './assets/pln-logo.png?url';
 
 const cube = new THREE.BoxGeometry(1, 1, 1);
 const material = (color, options = {}) => new THREE.MeshStandardMaterial({ color, roughness: .86, ...options });
 const navy = material(0x23394b);
 const boot = material(0x1c292e);
 const skin = material(0xc28d68);
-const vest = material(0x236889);
+const vest = material(0x23aae1);
 const stripe = material(0xf1d776, { emissive: 0x514515, emissiveIntensity: .35 });
 const white = material(0xf1f1e5);
 
@@ -20,14 +21,9 @@ function block(group, mat, x, y, z, w, h, d) {
 }
 
 function logoTexture() {
-  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
-  const g = c.getContext('2d');
-  g.fillStyle = '#f4d74b'; g.fillRect(0, 0, 128, 128);
-  g.fillStyle = '#d74339';
-  g.beginPath(); g.moveTo(73, 10); g.lineTo(46, 61); g.lineTo(71, 61); g.lineTo(54, 96); g.lineTo(91, 47); g.lineTo(66, 47); g.closePath(); g.fill();
-  g.strokeStyle = '#2273a9'; g.lineWidth = 8;
-  for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(13, 86 + i * 12); g.bezierCurveTo(33, 75 + i * 12, 46, 97 + i * 12, 65, 86 + i * 12); g.bezierCurveTo(82, 76 + i * 12, 100, 97 + i * 12, 116, 86 + i * 12); g.stroke(); }
-  const texture = new THREE.CanvasTexture(c); texture.colorSpace = THREE.SRGBColorSpace;
+  const texture = new THREE.TextureLoader().load(plnLogoUrl);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.repeat.set(917 / 2560, 1);
   return texture;
 }
 
@@ -45,9 +41,9 @@ export function createCharacter(scene) {
     block(body, stripe, x, 1.84, .333, .095, .54, .035);
     block(body, stripe, x, 1.84, -.333, .095, .54, .035);
   });
-  const logo = new THREE.Mesh(new THREE.PlaneGeometry(.25, .25), new THREE.MeshBasicMaterial({ map: logoTexture(), side: THREE.DoubleSide }));
-  logo.position.set(.18, 1.79, .344); body.add(logo);
-  const backLogo = logo.clone(); backLogo.scale.set(1.8, 1.8, 1); backLogo.position.set(0, 1.72, -.345); backLogo.rotation.y = Math.PI; body.add(backLogo);
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(.25, .25), new THREE.MeshBasicMaterial({ map: logoTexture(), toneMapped: false }));
+  logo.position.set(.10, 1.79, .356); body.add(logo);
+  const backLogo = logo.clone(); backLogo.scale.set(1.8, 1.8, 1); backLogo.position.set(0, 1.72, -.356); backLogo.rotation.y = Math.PI; body.add(backLogo);
   block(body, skin, 0, 2.48, 0, .56, .64, .54);
   block(body, white, 0, 2.88, 0, .76, .26, .69);
   block(body, white, 0, 2.78, .21, .87, .11, .52);

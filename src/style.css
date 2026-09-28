@@ -186,15 +186,10 @@ kbd {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--line-strong);
-  background: var(--yellow);
-  color: #174153;
-  font-size: 17px;
-  box-shadow: 0 3px 0 rgba(0, 97, 141, 0.13);
+  display: block;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
 }
 
 .topbar-right {
@@ -648,17 +643,10 @@ kbd {
 }
 
 .intro-icon {
-  display: grid;
-  place-items: center;
-  width: 66px;
-  height: 66px;
+  display: block;
+  width: 72px;
+  height: 72px;
   margin: 18px auto;
-  border: 1px solid #ddb800;
-  background: var(--yellow);
-  color: var(--text);
-  font-size: 30px;
-  box-shadow: 0 8px 22px rgba(145, 100, 0, 0.13);
-  animation: float 3.4s ease-in-out infinite;
 }
 
 @keyframes float {
@@ -994,7 +982,10 @@ kbd {
 }
 
 .email-link {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   align-items: center;
   gap: 10px;
   margin-bottom: 22px;
@@ -1004,6 +995,10 @@ kbd {
   font-size: 14px;
   letter-spacing: 0.04em;
   transition: background 0.18s, color 0.18s;
+}
+
+.email-link > span:first-child {
+  min-width: 0;
 }
 
 .email-link:hover {
@@ -1100,9 +1095,8 @@ kbd {
   }
 
   .brand-mark {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
+    width: 34px;
+    height: 34px;
   }
 
   .joystick {

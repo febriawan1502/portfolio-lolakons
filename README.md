@@ -2,7 +2,7 @@
 
 Explore a voxel island as a PLN field officer. Four renewable power plants are offline: a wind turbine, solar panels, a hydro plant, and a geothermal plant. Repairing each plant starts its own animation and sends visible electricity toward the house at the center of the island. The first repair turns on the lamp, the second the TV, the third the laptop, and the fourth the fan. Each plant still opens one portfolio section. Once all four are online, interact with the house to open About, Projects, Experience, and Contact in one scrollable overview.
 
-Everything in the world is generated in code, with no external models or textures.
+World geometry is generated in code, with no external models. The character uses a local copy of the [official PLN logo](https://www.pln.co.id/webapi/media/file/webkorp/asset/file080525_0858_423d.png) in `src/assets/pln-logo.png`. The badge displays the square symbol from that image, and the vest uses its blue (`#23AAE1`).
 
 ## Run locally
 
@@ -39,10 +39,11 @@ For a public domain, point DNS at the server and put an HTTPS reverse proxy in f
 | Jump | `Space` | JUMP button |
 | Look | Drag the canvas | Drag the world |
 | Repair or inspect | `E` or click a plant | E button |
+| Check house power | `E` near the house or click the house | E near the house |
 | Open complete overview | After four repairs, `E` near the house, click the house, or use the mission button | E near the house or mission button |
 | Close portfolio panel | `Esc` or ✕ | ✕ |
 
-Hold `Shift` while moving to sprint.
+Hold `Shift` while moving to sprint. Before all four plants are repaired, checking the house tells you to repair them and return, with the current progress. The first repair turns the house lamp from a dark bulb into a warm light with a gently pulsing glow and a visible pool on the floor. Once powered, the TV plays an animated landscape and the laptop shows moving activity bars. These devices stay static when reduced motion is enabled.
 
 ## Edit the portfolio
 

@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#dff5fc" />
     <meta name="description" content="Explore Febriawan Ramadhan's projects and experience through a renewable energy island." />
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/src/assets/character-head.svg" />
     <title>Febriawan Ramadhan · Power Up the Island</title>
     <style>
       html, body { margin: 0; min-height: 100%; background: #e4f7fc; }
       #loading-screen { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: #e4f7fc; color: #153947; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: center; transition: opacity .45s ease, visibility .45s ease; }
       #loading-screen.is-ready { opacity: 0; visibility: hidden; pointer-events: none; }
       #loading-screen [hidden] { display: none !important; }
-      .loading-mark { display: grid; place-items: center; width: 74px; height: 74px; margin: 0 auto 22px; background: #ffd500; border: 2px solid #d5b300; color: #174153; font-size: 38px; box-shadow: 8px 8px 0 #b9e8f4; }
+      .loading-mark { display: block; width: 74px; height: 74px; margin: 0 auto 22px; }
       .loading-title { margin: 0 0 8px; font-size: clamp(20px, 5vw, 30px); line-height: 1.15; letter-spacing: -.04em; }
       .loading-caption { margin: 0; color: #126986; font-size: 12px; letter-spacing: .16em; }
       .loading-track { width: min(240px, 70vw); height: 6px; margin: 28px auto 0; overflow: hidden; background: #b9e8f4; }
@@ -25,7 +26,7 @@
   </head>
   <body>
     <div id="loading-screen" role="status" aria-live="polite">
-      <div><div class="loading-mark" aria-hidden="true">⚡</div><h1 class="loading-title">Powering up the island</h1><p class="loading-caption">PREPARING YOUR ADVENTURE</p><div class="loading-track" aria-hidden="true"></div><div id="loading-error" hidden>Loading is taking longer than expected.<br><button id="loading-retry" type="button">TRY AGAIN</button></div></div>
+      <div><img class="loading-mark" src="/src/assets/character-head.svg" width="74" height="74" alt="" /><h1 class="loading-title">Powering up the island</h1><p class="loading-caption">PREPARING YOUR ADVENTURE</p><div class="loading-track" aria-hidden="true"></div><div id="loading-error" hidden>Loading is taking longer than expected.<br><button id="loading-retry" type="button">TRY AGAIN</button></div></div>
     </div>
     <script>
       window.portfolioLoadingTimeout = setTimeout(() => {
@@ -39,7 +40,7 @@
       <div class="vignette" aria-hidden="true"></div>
 
       <header class="topbar">
-        <a class="brand" href="#" aria-label="Power Up the Island home"><span class="brand-mark">⚡</span><span>POWER<span class="brand-muted">/</span>UP<br><small>THE ISLAND</small></span></a>
+        <a class="brand" href="#" aria-label="Power Up the Island home"><img class="brand-mark" src="/src/assets/character-head.svg" width="40" height="40" alt="" /><span>POWER<span class="brand-muted">/</span>UP<br><small>THE ISLAND</small></span></a>
         <div class="topbar-right"><span class="live-dot"></span><span>FIELD LOG <strong id="progress-text">00 / 04</strong></span><button id="sound-toggle" class="icon-button" aria-label="Toggle sound" title="Toggle sound" aria-pressed="true">SOUND ON</button></div>
       </header>
 
@@ -60,7 +61,7 @@
 
       <div class="mobile-controls" aria-label="Touch controls"><div id="joystick" class="joystick"><div id="joystick-knob" class="joystick-knob"></div></div><div class="mobile-actions"><button id="mobile-jump" class="touch-button" aria-label="Jump">↑<small>JUMP</small></button><button id="mobile-interact" class="touch-button interact" aria-label="Interact">E<small>REPAIR</small></button></div></div>
 
-      <div id="intro" class="intro-backdrop"><div class="intro-card"><span class="eyebrow">AN INTERACTIVE PORTFOLIO</span><div class="intro-icon">⚡</div><h2>The island needs<br>an engineer.</h2><p>Four renewable power plants are offline. Repair them to power the house and uncover the portfolio.</p><button id="start-button" class="primary-button">START EXPLORING <span>↗</span></button><div class="intro-controls">DESKTOP: WASD · SPACE · E &nbsp;&nbsp; / &nbsp;&nbsp; MOBILE: TOUCH CONTROLS</div></div></div>
+      <div id="intro" class="intro-backdrop"><div class="intro-card"><span class="eyebrow">AN INTERACTIVE PORTFOLIO</span><img class="intro-icon" src="/src/assets/character-head.svg" width="72" height="72" alt="" /><h2>The island needs<br>an engineer.</h2><p>Four renewable power plants are offline. Repair them to power the house and uncover the portfolio.</p><button id="start-button" class="primary-button">START EXPLORING <span>↗</span></button><div class="intro-controls">DESKTOP: WASD · SPACE · E &nbsp;&nbsp; / &nbsp;&nbsp; MOBILE: TOUCH CONTROLS</div></div></div>
 
       <div id="panel-backdrop" class="panel-backdrop" hidden><section id="portfolio-panel" class="portfolio-panel" role="dialog" aria-modal="true" aria-labelledby="panel-title"><div class="panel-top"><span id="panel-index">WIND TURBINE / 04</span><button id="panel-close" aria-label="Close panel">✕</button></div><div class="panel-status"><span class="status-dot"></span> CONNECTION RESTORED <span class="status-rule"></span> 100%</div><div id="panel-content"></div><div class="panel-bottom"><span>POWER / UP THE ISLAND</span><button id="panel-continue">CONTINUE EXPLORING <span>↗</span></button></div></section></div>
     </div>

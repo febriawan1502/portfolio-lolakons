@@ -2,7 +2,7 @@ export const portfolio = {
   name: 'Febriawan Ramadhan',
   role: 'Assistant Manager, Project Management and Construction',
   organization: 'PLN West Java Distribution Unit',
-  bio: "I manage projects, construction, and investment budgets at PLN's West Java Distribution Unit. I previously led distribution operations, logistics, and technical teams.",
+  bio: "I manage projects, construction, and investment budgets at PLN's West Java Distribution Unit. I previously led distribution operations, logistics, and technical teams. I hold a Diploma III (D3) in Electrical Engineering and a bachelor's degree (S1) in Industrial Engineering.",
   projects: [
     {
       title: 'Sieneng',
@@ -13,7 +13,8 @@ export const portfolio = {
     {
       title: 'Posko Yantek Optimizer',
       type: 'Geospatial analysis',
-      description: 'Analyzes individual outage data to identify optimal locations for technical service posts.'
+      description: 'Analyzes individual outage data to identify optimal locations for technical service posts.',
+      url: 'https://posko-yantek.frdev.id/'
     }
   ],
   experience: [
@@ -42,7 +43,9 @@ export const portfolio = {
       detail: 'Managed technical work at the ULP office.'
     }
   ],
-  email: 'febriawan1502@gmail.com'
+  email: 'febriawan1502@gmail.com',
+  workEmail: 'febriawan.ramadhan@pln.co.id',
+  github: 'https://github.com/febriawan1502'
 };
 
 export const stations = [
