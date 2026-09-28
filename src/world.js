@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { stations as stationData } from './data.js';
+import { createPlant, createHouse, powerAppliance, updatePlant, updateHouse } from './powerPlants.js';
 
 const C = {
   grass: 0x85bc61, grassLight: 0xa6d67b, grassDark: 0x6fa94e,
@@ -37,57 +38,6 @@ function makeTree(scene, x, z, size = 1) {
   });
 }
 
-function makePole(scene, x, z, height = 6) {
-  const group = new THREE.Group();
-  group.position.set(x, 0, z);
-  scene.add(group);
-  box(group, mats.metal, 0, height / 2, 0, .4, height, .4);
-  box(group, mats.metalLight, 0, height - .45, 0, 2.7, .23, .3);
-  box(group, mats.metal, 0, .45, 0, .8, .9, .8);
-  [-1, 1].forEach(s => {
-    box(group, mat(0xc7c7af), s * 1.02, height - .22, 0, .27, .3, .27);
-    box(group, mats.metal, s * 1.02, height - .68, 0, .09, .7, .09);
-  });
-  return { x, z, height, group };
-}
-
-function wire(scene, a, b, offset = 0) {
-  const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(a.x + offset, a.height - .22, a.z),
-    new THREE.Vector3((a.x + b.x) / 2 + offset, Math.min(a.height, b.height) - 1.1, (a.z + b.z) / 2),
-    new THREE.Vector3(b.x + offset, b.height - .22, b.z)
-  ]);
-  const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, .045, 5, false), mat(0x315d70));
-  scene.add(cable);
-  return curve;
-}
-
-function station(scene, info) {
-  const group = new THREE.Group();
-  group.position.set(info.x, 0, info.z);
-  group.userData.stationId = info.id;
-  scene.add(group);
-  box(group, mats.stone, 0, .12, 0, 3.5, .24, 3.2);
-  box(group, mats.metal, 0, 1.65, 0, 2.8, 2.8, 1.8);
-  box(group, mats.metalLight, 0, 3.1, 0, 3.15, .25, 2.1);
-  box(group, mat(0x0b5c7e), 0, 1.8, .94, 2.2, 1.65, .08);
-  const screenMat = mat(0x174f68, { emissive: 0x47251b, emissiveIntensity: .28 });
-  const screen = box(group, screenMat, 0, 1.96, 1.005, 1.7, 1.05, .035, false);
-  box(group, mats.gold, 0, .82, 1.01, 1.55, .08, .07);
-  [-1.18, 1.18].forEach(x => box(group, mats.metalLight, x, 1.52, 1.02, .14, 2.1, .12));
-  const lampMat = mat(C.red, { emissive: C.red, emissiveIntensity: .55 });
-  const lamp = box(group, lampMat, 0, 3.4, .55, .35, .3, .35, false);
-  const lampLight = new THREE.PointLight(C.red, .65, 4);
-  lampLight.position.set(0, 3.5, .5);
-  group.add(lampLight);
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.85, .48), new THREE.MeshBasicMaterial({ map: labelTexture(info.number, info.title), transparent: true, depthWrite: false }));
-  sign.position.set(0, 2.73, 1.075);
-  group.add(sign);
-  const hitbox = box(group, new THREE.MeshBasicMaterial({ visible: false }), 0, 1.65, 0, 3.7, 3.3, 3.5, false);
-  hitbox.userData.stationId = info.id;
-  return { ...info, group, lamp, lampMat, lampLight, screen, screenMat, hitbox, repaired: false };
-}
-
 function labelTexture(number, title) {
   const canvas = document.createElement('canvas');
   canvas.width = 512; canvas.height = 128;
@@ -95,7 +45,7 @@ function labelTexture(number, title) {
   ctx.fillStyle = '#ffdf33'; ctx.fillRect(0, 0, 512, 128);
   ctx.fillStyle = '#124a66'; ctx.font = 'bold 58px monospace'; ctx.fillText(number, 18, 84);
   ctx.fillRect(112, 22, 3, 84);
-  ctx.font = 'bold 43px monospace'; ctx.fillText(title.toUpperCase(), 137, 81);
+  ctx.font = 'bold 33px monospace'; ctx.fillText(title.toUpperCase(), 137, 79);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -167,41 +117,39 @@ export function createWorld(scene) {
     box(scene, mat(flowerColors[i % 3]), x, .13, z, .12, .24, .12, false);
   }
 
-  const poles = [makePole(scene,-5.5,-4.5), makePole(scene,0,-5.5,6.8), makePole(scene,5,-5.5), makePole(scene,-5.5,6), makePole(scene,0,6,6.8), makePole(scene,5.5,6)];
-  const curves = [];
-  [[0,1],[1,2],[3,4],[4,5],[1,4]].forEach(([a,b]) => { curves.push(wire(scene,poles[a],poles[b],-.95)); curves.push(wire(scene,poles[a],poles[b],.95)); });
-  const stationObjects = stationData.map(info => station(scene,info));
-
-  const core = new THREE.Group(); scene.add(core);
-  box(core, mats.stone, 0, .18, 0, 3.2, .36, 3.2);
-  box(core, mats.metal, 0, 1.15, 0, 1.7, 1.7, 1.7);
-  box(core, mats.metalLight, 0, 2.1, 0, 2.1, .25, 2.1);
-  const coreLightMat = mat(0x16789e, { emissive: 0x008fc7, emissiveIntensity: .25 });
-  const coreLight = box(core, coreLightMat, 0, 1.22, .88, 1.15, .9, .07, false);
-  const coreBeacon = new THREE.PointLight(0xffd500, .2, 8); coreBeacon.position.set(0, 2.4, 0); core.add(coreBeacon);
-
-  const clickTargets = stationObjects.map(s => s.hitbox);
-  const blockers = [terrain, ...stationObjects.map(s => s.group), ...poles.map(p => p.group)];
-  return { stations: stationObjects, curves, clickTargets, blockers, coreLight, coreLightMat, coreBeacon, water };
+  const stationObjects = stationData.map(info => createPlant(scene, info, labelTexture));
+  const house = createHouse(scene);
+  const curves = stationObjects.map(station => {
+    const start = new THREE.Vector3(station.x, .19, station.z);
+    const end = new THREE.Vector3(Math.sign(station.x) * 2.55, .19, Math.sign(station.z) * 1.7);
+    const curve = new THREE.CatmullRomCurve3([start, new THREE.Vector3((start.x + end.x) / 2, .2, (start.z + end.z) / 2), end]);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 22, .065, 5, false), mat(0x38677b)));
+    return { curve, id: station.id };
+  });
+  const clickTargets = [...stationObjects.map(s => s.hitbox), house.hitbox];
+  const blockers = [terrain, ...stationObjects.map(s => s.group)];
+  return { stations: stationObjects, curves, clickTargets, blockers, house, water };
 }
 
-export function setStationPower(station, on) {
+export function setStationPower(world, station, on) {
   station.repaired = on;
   station.lampMat.color.setHex(on ? C.green : C.red);
   station.lampMat.emissive.setHex(on ? C.green : C.red);
+  station.lampMat.emissiveIntensity = on ? 1 : .5;
   station.lampLight.color.setHex(on ? C.green : C.red);
-  station.lampLight.intensity = on ? 1.2 : .65;
-  station.lampMat.emissiveIntensity = on ? .75 : .55;
-  station.screenMat.emissive.setHex(on ? 0x008fc7 : 0x47251b);
-  station.screenMat.emissiveIntensity = on ? 1.1 : .5;
+  station.lampLight.intensity = on ? .9 : .3;
+  if (on) powerAppliance(world.house, station.appliance);
 }
 
-export function updateWorld(world, time, powerCount) {
-  for (const s of world.stations) if (!s.repaired) {
-    const pulse = .5 + .5 * Math.sin(time * 4 + Number(s.number));
-    s.lampLight.intensity = .28 + pulse * .5;
-    s.lampMat.emissiveIntensity = .3 + pulse * .65;
+export function updateWorld(world, time) {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  for (const station of world.stations) {
+    if (!station.repaired) {
+      const pulse = .5 + .5 * Math.sin(time * 4 + Number(station.number));
+      station.lampLight.intensity = .15 + pulse * .25;
+      station.lampMat.emissiveIntensity = .25 + pulse * .45;
+    }
+    updatePlant(station, time, reducedMotion);
   }
-  world.coreBeacon.intensity = .2 + powerCount * .35;
-  world.coreLightMat.emissiveIntensity = .25 + powerCount * .24;
+  updateHouse(world.house, reducedMotion);
 }

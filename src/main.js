@@ -4,6 +4,7 @@ import { createWorld, setStationPower, updateWorld } from './world.js';
 import { createCharacter, updateCharacter } from './character.js';
 import { createEffects } from './effects.js';
 import { createUI } from './ui.js';
+import backgroundMusicUrl from './harumachimusic-beautiful-natural-spring-loop-111876.mp3?url';
 import './style.css';
 
 const canvas = document.querySelector('#world');
@@ -32,13 +33,18 @@ const stick = { x: 0, y: 0 };
 let playing = false;
 let repairing = false;
 let powerCount = 0;
+const poweredPlants = new Set();
+const houseTarget = { kind: 'house', id: 'house', title: 'House', x: 0, z: 0 };
 let yaw = .55;
 let pitch = .56;
 let distance = window.innerWidth < 700 ? 15 : 18;
 let pointerDown = null;
 let activeStick = null;
 let jumpPressed = false;
-let audioEnabled = false;
+let audioEnabled = true;
+const backgroundMusic = new Audio(backgroundMusicUrl);
+backgroundMusic.loop = true;
+backgroundMusic.volume = .32;
 let audioContext;
 let firstFrameRendered = false;
 
@@ -67,11 +73,28 @@ function nearestStation() {
   return result;
 }
 
-function interact(station = nearestStation()) {
+function nearestTarget() {
+  if (powerCount === 4 && Math.hypot(character.root.position.x, character.root.position.z) <= 4.3) return houseTarget;
+  return nearestStation();
+}
+
+function openOverview() {
+  if (powerCount !== 4 || repairing || ui.isOpen()) return;
+  playing = false;
+  ui.openOverview();
+}
+
+function interact(station = nearestTarget()) {
   if (!playing || repairing || ui.isOpen()) return;
-  if (!station) { ui.toast('Move closer to a station'); return; }
+  if (station?.kind === 'house') {
+    if (powerCount !== 4) { ui.toast(`${4 - powerCount} power plants still need repair`); return; }
+    if (Math.hypot(character.root.position.x, character.root.position.z) > 4.3) { ui.toast('Move closer to the house'); return; }
+    openOverview();
+    return;
+  }
+  if (!station) { ui.toast(powerCount === 4 ? 'Return to the house for the full portfolio' : 'Move closer to a power plant'); return; }
   const distance = character.root.position.distanceTo(new THREE.Vector3(station.x, 0, station.z));
-  if (distance > 4.1) { ui.toast('Move closer to repair this station'); return; }
+  if (distance > 4.1) { ui.toast('Move closer to repair this power plant'); return; }
   if (station.repaired) { playing = false; ui.open(station); return; }
   repairing = true;
   character.repairing = 1.1;
@@ -80,12 +103,14 @@ function interact(station = nearestStation()) {
   sound(380);
   ui.prompt(null);
   setTimeout(() => {
-    setStationPower(station, true);
+    station.appliance = ['lamp', 'tv', 'laptop', 'fan'][powerCount];
+    setStationPower(world, station, true);
     powerCount++;
+    poweredPlants.add(station.id);
     effects.burst(station.group.position);
     sound(780);
-    ui.progress(powerCount);
-    ui.toast(powerCount === 4 ? 'Island grid fully restored!' : `${station.title} station online`);
+    ui.progress(powerCount, station);
+    ui.toast(powerCount === 4 ? 'House overview unlocked. Return to the house!'  : `${station.title} online · ${station.appliance.toUpperCase()} on`);
     setTimeout(() => { repairing = false; playing = false; ui.open(station); }, 450);
   }, 820);
 }
@@ -95,13 +120,21 @@ document.querySelector('#start-button').addEventListener('click', () => {
   // start the game immediately: never gate gameplay on an animation frame callback
   intro.style.pointerEvents = 'none';
   playing = true;
+  if (audioEnabled) backgroundMusic.play().catch(() => ui.toast('Music could not play. Tap Sound to retry.'));
   gsap.to(intro, { opacity: 0, duration: .45, onComplete: () => { intro.hidden = true; } });
 });
+document.querySelector('#overview-button').addEventListener('click', openOverview);
 document.querySelector('#sound-toggle').addEventListener('click', event => {
   audioEnabled = !audioEnabled;
   event.currentTarget.textContent = audioEnabled ? 'SOUND ON' : 'SOUND OFF';
   event.currentTarget.setAttribute('aria-pressed', String(audioEnabled));
-  if (audioEnabled) sound(520);
+  if (audioEnabled) {
+    backgroundMusic.play().catch(() => ui.toast('Music could not play in this browser.'));
+    sound(520);
+  } else {
+    backgroundMusic.pause();
+    audioContext?.suspend();
+  }
 });
 
 const movementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'Space'];
@@ -132,7 +165,7 @@ canvas.addEventListener('pointerup', event => {
     pointer.set(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
     const hits = raycaster.intersectObjects(world.clickTargets);
-    if (hits.length) interact(world.stations.find(s => s.id === hits[0].object.userData.stationId));
+    if (hits.length) interact(hits[0].object.userData.house ? houseTarget : world.stations.find(s => s.id === hits[0].object.userData.stationId));
   }
   pointerDown = null;
 });
@@ -194,9 +227,9 @@ function animate() {
   camera.position.lerp(desired, 1 - Math.exp(-delta * 4));
   camera.lookAt(target);
   compassArrow.style.transform = `rotate(${-yaw}rad)`;
-  updateWorld(world, elapsed, powerCount);
-  effects.update(elapsed, delta, powerCount);
-  ui.prompt(playing && !repairing ? nearestStation() : null);
+  updateWorld(world, elapsed);
+  effects.update(elapsed, delta, poweredPlants);
+  ui.prompt(playing && !repairing ? nearestTarget() : null);
   renderer.render(scene, camera);
   if (!firstFrameRendered) {
     firstFrameRendered = true;

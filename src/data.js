@@ -1,30 +1,53 @@
-// Replace these labeled examples with your own biography, projects, experience, and links.
 export const portfolio = {
-  name: 'Your Name',
-  role: 'Creative Developer / Field Engineer',
-  bio: 'A space for your story: explain the work you do, the problems you enjoy solving, and what you bring to a team.',
-  location: 'Your location',
-  skills: ['Three.js', 'JavaScript', 'Creative coding', 'UI engineering', '3D interaction'],
+  name: 'Febriawan Ramadhan',
+  role: 'Assistant Manager, Project Management and Construction',
+  organization: 'PLN West Java Distribution Unit',
+  bio: "I manage projects, construction, and investment budgets at PLN's West Java Distribution Unit. I previously led distribution operations, logistics, and technical teams.",
   projects: [
-    { title: 'Project One', type: 'Interactive experience', description: 'Describe the challenge, your approach, and the result.', url: '' },
-    { title: 'Project Two', type: 'Web application', description: 'Add a short summary of the product and your contribution.', url: '' },
-    { title: 'Project Three', type: 'Visual experiment', description: 'Show what makes this project worth exploring.', url: '' }
+    {
+      title: 'Sieneng',
+      type: 'Inventory management',
+      description: 'An inventory management application for PLN West Java Distribution Unit.',
+      url: 'https://sieneng.app'
+    },
+    {
+      title: 'Posko Yantek Optimizer',
+      type: 'Geospatial analysis',
+      description: 'Analyzes individual outage data to identify optimal locations for technical service posts.'
+    }
   ],
   experience: [
-    { date: 'NOW', role: 'Your current role', place: 'Company or independent', detail: 'Add a concrete responsibility or achievement.' },
-    { date: 'BEFORE', role: 'Previous role', place: 'Company or team', detail: 'Describe the work you owned and its impact.' },
-    { date: 'START', role: 'Where it began', place: 'School, company, or project', detail: 'Add the milestone that started your path.' }
+    {
+      date: 'CURRENT',
+      role: 'Assistant Manager, Project Management and Construction',
+      place: 'PLN West Java Distribution Unit',
+      detail: 'Manage projects, construction, and investment budgets.'
+    },
+    {
+      date: 'PREVIOUS',
+      role: 'Distribution Operations Team Leader',
+      place: 'PLN UP3 Cirebon',
+      detail: 'Managed distribution system operating patterns.'
+    },
+    {
+      date: 'PREVIOUS',
+      role: 'Logistics Team Leader',
+      place: 'PLN UP3 Cirebon',
+      detail: 'Managed the warehouse and logistics.'
+    },
+    {
+      date: 'START',
+      role: 'Technical Team Leader',
+      place: 'PLN ULP',
+      detail: 'Managed technical work at the ULP office.'
+    }
   ],
-  email: 'hello@example.com',
-  socials: [
-    { label: 'GitHub', url: '' },
-    { label: 'LinkedIn', url: '' }
-  ]
+  email: 'febriawan1502@gmail.com'
 };
 
 export const stations = [
-  { id: 'about', title: 'About Me', number: '01', x: -8, z: -4.5, accent: 0x79dbc2 },
-  { id: 'projects', title: 'Projects', number: '02', x: 7.5, z: -5.5, accent: 0x79dbc2 },
-  { id: 'experience', title: 'Experience', number: '03', x: -8.5, z: 6.5, accent: 0x79dbc2 },
-  { id: 'contact', title: 'Contact Me', number: '04', x: 8, z: 6.5, accent: 0x79dbc2 }
+  { id: 'about', title: 'Wind Turbine', number: '01', type: 'wind', x: -8, z: -4.5 },
+  { id: 'projects', title: 'Solar Panels', number: '02', type: 'solar', x: 7.5, z: -5.5 },
+  { id: 'experience', title: 'Hydro Power', number: '03', type: 'hydro', x: -8.5, z: 6.5 },
+  { id: 'contact', title: 'Geothermal', number: '04', type: 'geothermal', x: 8, z: 6.5 }
 ];

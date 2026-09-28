@@ -5,12 +5,12 @@ export function createEffects(scene, curves) {
   const particleGeo = new THREE.BoxGeometry(.13, .13, .13);
   const particleMat = new THREE.MeshBasicMaterial({ color: 0xbafbe4 });
   const particles = [];
-  curves.forEach((curve, ci) => {
+  curves.forEach(({ curve, id }) => {
     for (let i = 0; i < 4; i++) {
       const mesh = new THREE.Mesh(particleGeo, particleMat);
       mesh.visible = false;
       group.add(mesh);
-      particles.push({ mesh, curve, ci, offset: i / 4 });
+      particles.push({ mesh, curve, id, offset: i / 4 });
     }
   });
   const sparks = new THREE.Group(); scene.add(sparks);
@@ -29,11 +29,11 @@ export function createEffects(scene, curves) {
       spark.mesh.visible = true;
     });
   }
-  function update(time, delta, powerCount) {
+  function update(time, delta, poweredIds) {
     particles.forEach(p => {
-      p.mesh.visible = powerCount > 0 && p.ci < powerCount * 3;
+      p.mesh.visible = poweredIds.has(p.id);
       if (p.mesh.visible) {
-        const t = (time * .28 + p.offset + p.ci * .17) % 1;
+        const t = (time * .28 + p.offset) % 1;
         p.mesh.position.copy(p.curve.getPoint(t));
         const size = .7 + Math.sin(t * Math.PI) * .7;
         p.mesh.scale.setScalar(size);

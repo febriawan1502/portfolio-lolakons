@@ -1,95 +1,37 @@
 # Power Up the Island — Playable 3D Voxel Portfolio
 
-An interactive, playable portfolio disguised as a small voxel island. You control a blocky
-PLN field officer (`petugas PLN`) in a white K3 helmet and blue hi-vis vest. Four substations
-are offline — walk to each one, repair it, and it unlocks a portfolio section.
+Explore a voxel island as a PLN field officer. Four renewable power plants are offline: a wind turbine, solar panels, a hydro plant, and a geothermal plant. Repairing each plant starts its own animation and sends visible electricity toward the house at the center of the island. The first repair turns on the lamp, the second the TV, the third the laptop, and the fourth the fan. Each plant still opens one portfolio section. Once all four are online, interact with the house to open About, Projects, Experience, and Contact in one scrollable overview.
 
-Everything is generated procedurally in code: no external models, textures, or CDN links.
+Everything in the world is generated in code, with no external models or textures.
 
-## Quick start
+## Run locally
 
 ```bash
-npm install      # or: bun install / pnpm install
-npm run dev      # http://localhost:5173
+bun install
+bun run dev
 ```
 
-```bash
-npm run build    # production bundle -> dist/
-npm run preview  # serve the built bundle
-```
-
-Requires Node 18+ and a browser with WebGL 2.
+`bun run build` creates the production site in `dist/`. Node 18+ with npm is also supported.
 
 ## Controls
 
 | Action | Desktop | Mobile |
 | --- | --- | --- |
-| Move | `W` `A` `S` `D` / arrow keys | virtual joystick (bottom-left) |
-| Jump | `Space` | `JUMP` button |
-| Look / orbit | drag the canvas | drag anywhere on the world |
-| Zoom | mouse wheel | — |
-| Repair / inspect | `E` or click a station | `E` button |
-| Close panel | `Esc` or the ✕ button | tap ✕ |
+| Move | `W` `A` `S` `D` / arrow keys | Joystick |
+| Jump | `Space` | JUMP button |
+| Look | Drag the canvas | Drag the world |
+| Repair or inspect | `E` or click a plant | E button |
+| Open complete overview | After four repairs, `E` near the house, click the house, or use the mission button | E near the house or mission button |
+| Close portfolio panel | `Esc` or ✕ | ✕ |
 
-Sprint is available on `Shift` while moving.
+Hold `Shift` while moving to sprint.
 
-## Folder structure
+## Edit the portfolio
 
-```
-portfolio/
-├── index.html          # HUD markup: topbar, mission card, prompt, intro, panel shell
-├── package.json
-└── src/
-    ├── main.js         # bootstrap: renderer, TPS camera, input, game loop, game state
-    ├── world.js        # island terrain, trees, poles, cables, substations, lighting
-    ├── character.js    # procedural voxel PLN officer + walk/repair animation
-    ├── effects.js      # current-pulse particles along the cables, repair spark burst
-    ├── ui.js           # HUD wiring, portfolio panel content + GSAP transitions
-    ├── data.js         # ← YOUR CONTENT: bio, projects, experience, contact
-    └── style.css       # retro/cyberpunk HUD, panel, responsive + touch styling
-```
+Febriawan Ramadhan's portfolio content and the plant positions live in `src/data.js`. The four station IDs continue to map to About, Projects, Experience, and Contact. The house devices always turn on in repair order, regardless of which plant the player visits first.
 
-## Making it yours
+`src/powerPlants.js` builds the four plants and the open house. `src/world.js` builds the terrain and connects each plant to the house. `src/effects.js` moves current along repaired plants' cables.
 
-All personal content lives in `src/data.js`. Nothing else needs editing:
+The supplied background track loops while sound is on. Sound starts enabled and playback begins when the visitor presses Start, as required by browser autoplay rules. The Sound control pauses or resumes the music and effects.
 
-- `portfolio` — name, role, bio, location, skills, projects, experience, email, socials.
-- `stations` — the four station positions (`x`, `z`) and titles. Moves the buildings and the
-  portfolio sections together.
-
-Entries with an empty `url` intentionally render as a greyed-out `LINK PENDING` chip, so the
-site is presentable before you have every link.
-
-## How it works
-
-**World** (`world.js`) — The island is a blob tested with a superellipse falloff, rendered as
-two `InstancedMesh` layers (grass on top, dirt below) with per-instance colour variation for a
-hand-placed voxel feel. Poles, trees, paths and substations are plain box meshes. Power cables
-are `CatmullRomCurve3` sag curves extruded to `TubeGeometry`; the same curves drive the current
-particles, so the cables and the electricity can never drift apart.
-
-**Character** (`character.js`) — Built from scaled `BoxGeometry` blocks in a hip/limb hierarchy.
-The PLN logo is drawn to a `<canvas>` at runtime (lightning bolt + water waves) and applied as a
-`CanvasTexture` on the chest and back. Walk cycle is procedural: opposite-phase sine rotation on
-arms and legs plus a subtle body bob, all interpolated so it can start and stop smoothly. The
-repair animation overrides the arms with a fast oscillation.
-
-**Camera** (`main.js`) — Third-person orbit-follow: spherical offset from the character, damped
-with `1 - exp(-delta * k)` so it stays frame-rate independent. A raycast from the character's
-head to the desired camera position pulls the camera in when terrain or structures would block
-the view.
-
-**Power states** — `setStationPower()` swaps the lamp and screen materials from pulsing red to
-steady green; `updateWorld()` drives the blink, and `effects.js` progressively enables current
-particles per repaired station.
-
-## Notes
-
-- Frame-rate independence relies on a `delta` clamp (max 50 ms/frame), which also prevents
-  tunnelling through the world on a frame hitch.
-- Overlay transitions use GSAP, but **game state never depends on an animation callback** —
-  the intro and panel teardown both fall back to a timer so a starved frame cannot lock input.
-- Touch controls appear on `(hover: none)` or narrow viewports, and the HUD moves out of the
-  thumb zones on those devices.
-- Deploy as a static site: `dist/` works on Netlify, Vercel, GitHub Pages or any file host.
-  If you serve from a subpath, set `base` in a `vite.config.js`.
+This is a static Vite site. WebGL 2 is required to render the world.
